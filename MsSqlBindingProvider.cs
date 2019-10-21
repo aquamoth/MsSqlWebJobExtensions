@@ -18,17 +18,21 @@ namespace MsSqlWebJobExtensions
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
 
-            ParameterInfo parameter = context.Parameter;
-
-            MsSqlTriggerAttribute attribute = parameter.GetCustomAttribute<MsSqlTriggerAttribute>(inherit: false);
-            if (attribute == null)
-            {
-                return Task.FromResult<ITriggerBinding>(null);
-            }
-
-            ITriggerBinding binding = new MsSqlTriggerBinding(_configuration, parameter, attribute);
-
+            var binding = CreateTriggerBindingFor(context.Parameter);
             return Task.FromResult(binding);
+        }
+
+        private ITriggerBinding CreateTriggerBindingFor(ParameterInfo parameter)
+        {
+            var tableAttribute = parameter.GetCustomAttribute<MsSqlTableTriggerAttribute>(inherit: false);
+            if (tableAttribute != null)
+                return new MsSqlTableTriggerBinding(_configuration, parameter, tableAttribute);
+
+            var attribute = parameter.GetCustomAttribute<MsSqlTriggerAttribute>(inherit: false);
+            if (attribute != null)
+                return new MsSqlTriggerBinding(_configuration, parameter, attribute);
+
+            return null;
         }
     }
 }

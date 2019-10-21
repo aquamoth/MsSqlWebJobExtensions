@@ -216,10 +216,12 @@
     <Compile Include="JsonValueProvider.cs" />
     <Compile Include="MsSqlBindingProvider.cs" />
     <Compile Include="MsSqlInfo.cs" />
-    <Compile Include="MsSqlListener.cs" />
-    <Compile Include="MsSqlTriggerAttribute.cs" />
-    <Compile Include="MsSqlTriggerBinding.cs" />
-    <Compile Include="MsSqlTriggerData.cs" />
+    <Compile Include="Trigger\MsSqlListener.cs" />
+    <Compile Include="TableTrigger\MsSqlTableListener.cs" />
+    <Compile Include="TableTrigger\MsSqlTableTriggerBinding.cs" />
+    <Compile Include="TableTrigger\MsSqlTableTriggerAttribute.cs" />
+    <Compile Include="Trigger\MsSqlTriggerAttribute.cs" />
+    <Compile Include="Trigger\MsSqlTriggerBinding.cs" />
     <Compile Include="MsSqlTriggerExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
