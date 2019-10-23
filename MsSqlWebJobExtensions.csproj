@@ -1,9 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk" InitialTargets="SetVersion">
   <PropertyGroup>
     <TargetFramework>net471</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="gitinfo" Version="2.0.21">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="2.2.0" />
   </ItemGroup>
+  <Import Project="Version.targets" />
 </Project>
