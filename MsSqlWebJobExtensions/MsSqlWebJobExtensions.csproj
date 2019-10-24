@@ -1,6 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" InitialTargets="SetVersion">
   <PropertyGroup>
     <TargetFramework>net471</TargetFramework>
+    <Authors>Trustfall AB, www.trustfall.se</Authors>
+    <Company>Trustfall AB, www.trustfall.se</Company>
+    <Copyright>Copyright 2016 Trustfall AB</Copyright>
+    <Description>WebJob trigger extensions to MS Sql</Description>
+    <Deterministic>true</Deterministic>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageLicenseUrl>https://github.com/aquamoth/MsSqlWebJobExtensions/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/aquamoth/MsSqlWebJobExtensions</PackageProjectUrl>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="gitinfo" Version="2.0.21">
@@ -10,5 +18,8 @@
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="2.2.0" />
   </ItemGroup>
+  <Target Name="AfterBuildMigrated" Condition=" '$(Configuration)' == 'Release'">
+    <Exec Command="$(SolutionDir).nuget\nuget pack MsSqlWebJobExtensions.csproj -Prop Configuration=Release -OutputDirectory $(SolutionDir).nuget\" />
+  </Target>
   <Import Project="Version.targets" />
 </Project>
