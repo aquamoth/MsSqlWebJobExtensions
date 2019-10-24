@@ -92,12 +92,10 @@ namespace MsSqlWebJobExtensions
             dependency.OnChange += new OnChangeEventHandler(new Action<object, SqlNotificationEventArgs>(dependency_OnChange));
 
             await connection.OpenAsync();
-            connection.BeginTransaction(IsolationLevel.ReadCommitted).Commit();
-            using (var setCommand = new SqlCommand("SET ARITHABORT ON", connection))
-                setCommand.ExecuteNonQuery();
-
+            //connection.BeginTransaction(IsolationLevel.ReadCommitted).Commit();
+            //using (var setCommand = new SqlCommand("SET ARITHABORT ON", connection))
+            //    setCommand.ExecuteNonQuery();
             await command.ExecuteNonQueryAsync();
-            
             connection.Close();
         }
 
