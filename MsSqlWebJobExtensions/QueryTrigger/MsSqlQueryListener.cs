@@ -18,7 +18,6 @@ namespace MsSqlWebJobExtensions
 
         SqlConnection connection = null;
         SqlCommand command = null;
-        //DataSet myDataSet = null;
 
         public MsSqlQueryListener(string configuration, ITriggeredFunctionExecutor triggerExecutor, MsSqlQueryTriggerAttribute attribute)
         {
@@ -59,32 +58,6 @@ namespace MsSqlWebJobExtensions
             }
         }
 
-
-
-        //private void Timer_Callback()
-        //{
-        //    if (_ct.IsCancellationRequested)
-        //    {
-        //        //_timer.Dispose();
-        //        return;
-        //    }
-
-        //    //var hasNewData = CheckForRows();
-        //    //if (!hasNewData)
-        //    //    return Task.CompletedTask;
-
-        //    var msSqlInfo = new MsSqlInfo { /*TestMessage = "Some test message"*/ };//TODO: 
-        //    var triggerValue = JsonConvert.SerializeObject(msSqlInfo, Constants.JsonSerializerSettings);
-
-        //    TriggeredFunctionData input = new TriggeredFunctionData
-        //    {
-        //        TriggerValue = triggerValue
-        //    };
-
-        //    var task = _triggerExecutor.TryExecuteAsync(input, _ct);
-        //    //return task;
-        //}
-
         private async Task RegisterSqlDependencyOnServerAsync()
         {
             try
@@ -97,10 +70,10 @@ namespace MsSqlWebJobExtensions
 
                 if (connection == null)
                     connection = new SqlConnection(connectionString);
+
                 if (command == null)
                     command = new SqlCommand(_attribute.Query, connection);
-                //if (myDataSet == null)
-                //    myDataSet = new DataSet();
+
                 await ReadDataAsync();
             }
             catch (Exception ex)
@@ -111,29 +84,20 @@ namespace MsSqlWebJobExtensions
 
         private async Task ReadDataAsync()
         {
-
-            //myDataSet.Clear();
             // Ensure the command object does not have a notification object.
             command.Notification = null;
+
             // Create and bind the SqlDependency object to the command object.
             SqlDependency dependency = new SqlDependency(command);
             dependency.OnChange += new OnChangeEventHandler(new Action<object, SqlNotificationEventArgs>(dependency_OnChange));
 
-            //using (SqlDataAdapter adapter = new SqlDataAdapter(command))
-            //{
-            //    adapter.Fill(myDataSet, "Advt");
-            //    dataGridView1.DataSource = myDataSet;
-            //    dataGridView1.DataMember = "Advt";
-            //}
             await connection.OpenAsync();
+            connection.BeginTransaction(IsolationLevel.ReadCommitted).Commit();
+            using (var setCommand = new SqlCommand("SET ARITHABORT ON", connection))
+                setCommand.ExecuteNonQuery();
+
             await command.ExecuteNonQueryAsync();
-            //using (var reader = await command.ExecuteReaderAsync())
-            //{
-            //    while (await reader.ReadAsync())
-            //    {
-            //        //TODO: what do we do with read data?
-            //    }
-            //}
+            
             connection.Close();
         }
 
@@ -143,9 +107,6 @@ namespace MsSqlWebJobExtensions
             SqlDependency dependency = (SqlDependency)sender;
             dependency.OnChange -= dependency_OnChange;
 
-
-            //UIDelegate uidel = new UIDelegate(RefreshData);
-            //this.Invoke(uidel, null);
             var msSqlInfo = new MsSqlInfo { /*TestMessage = "Some test message"*/ };//TODO: 
             var triggerValue = JsonConvert.SerializeObject(msSqlInfo, Constants.JsonSerializerSettings);
 
