@@ -12,26 +12,10 @@ namespace MsSqlWebJobExtensions.Tests.TableTrigger
         [Fact]
         public void Initializes_with_only_table_name()
         {
-            var actualModules = System.Reflection.Assembly
-                .GetExecutingAssembly()
-                .GetTypes()
-                .Where(c => c.Name == nameof(TestTarget));
+            var targetMethod = typeof(TestTarget).GetMethod(nameof(TestTarget.TargetMethod));
+            var attribute = GetAttributeData(targetMethod, typeof(MsSqlTableTriggerAttribute));
 
-            var actualTargetMethod = actualModules
-                .SelectMany(m => m.GetMethods())
-                .Where(m => m.Name == nameof(TestTarget.TargetMethod))
-                .Where(m => m.GetParameters()
-                    .Any(p => p.CustomAttributes
-                        .Any(a => a.AttributeType == typeof(MsSqlTableTriggerAttribute))
-                    )
-                ).Single();
-
-            var actualAttribute = actualTargetMethod.GetParameters()
-                .SelectMany(p => p.CustomAttributes)
-                .Where(a => a.AttributeType == typeof(MsSqlTableTriggerAttribute))
-                .Single();
-
-            Assert.Collection(actualAttribute.ConstructorArguments,
+            Assert.Collection(attribute.ConstructorArguments,
                 arg => Assert.Equal("TABLE_NAME", arg.Value),
                 arg => Assert.Equal(EXPECTED_DEFAULT_POLLING_INTERVAL, arg.Value)
             );
@@ -40,29 +24,21 @@ namespace MsSqlWebJobExtensions.Tests.TableTrigger
         [Fact]
         public void Initializes_with_polling_interval()
         {
-            var actualModules = System.Reflection.Assembly
-                .GetExecutingAssembly()
-                .GetTypes()
-                .Where(c => c.Name == nameof(TestTarget));
+            var targetMethod = typeof(TestTarget).GetMethod(nameof(TestTarget.TargetMethod2));
+            var attribute = GetAttributeData(targetMethod, typeof(MsSqlTableTriggerAttribute));
 
-            var actualTargetMethod = actualModules
-                .SelectMany(m => m.GetMethods())
-                .Where(m=>m.Name == nameof(TestTarget.TargetMethod2))
-                .Where(m => m.GetParameters()
-                    .Any(p => p.CustomAttributes
-                        .Any(a => a.AttributeType == typeof(MsSqlTableTriggerAttribute))
-                    )
-                ).Single();
-
-            var actualAttribute = actualTargetMethod.GetParameters()
-                .SelectMany(p => p.CustomAttributes)
-                .Where(a => a.AttributeType == typeof(MsSqlTableTriggerAttribute))
-                .Single();
-
-            Assert.Collection(actualAttribute.ConstructorArguments,
+            Assert.Collection(attribute.ConstructorArguments,
                 arg => Assert.Equal(IRRELEVANT, arg.Value),
                 arg => Assert.Equal(ALTERNATIVE_POLLING_INTERVAL, arg.Value)
             );
+        }
+
+        private static System.Reflection.CustomAttributeData GetAttributeData(System.Reflection.MethodInfo actualTargetMethod, System.Type type)
+        {
+            return actualTargetMethod.GetParameters()
+                .SelectMany(p => p.CustomAttributes)
+                .Where(a => a.AttributeType == type)
+                .Single();
         }
     }
 
