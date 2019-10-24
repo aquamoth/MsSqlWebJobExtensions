@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29318.209
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MsSqlWebJobExtensions", "MsSqlWebJobExtensions.csproj", "{ADC93D33-DD80-4729-AD24-B439014D224C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MsSqlWebJobExtensions", "MsSqlWebJobExtensions\MsSqlWebJobExtensions.csproj", "{ADC93D33-DD80-4729-AD24-B439014D224C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MsSqlWebJobExtensions.Tests", "MsSqlWebJobExtensions.Tests\MsSqlWebJobExtensions.Tests.csproj", "{79E09A16-484B-4B83-A871-99F542004DCB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{ADC93D33-DD80-4729-AD24-B439014D224C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ADC93D33-DD80-4729-AD24-B439014D224C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ADC93D33-DD80-4729-AD24-B439014D224C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79E09A16-484B-4B83-A871-99F542004DCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79E09A16-484B-4B83-A871-99F542004DCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79E09A16-484B-4B83-A871-99F542004DCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79E09A16-484B-4B83-A871-99F542004DCB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
