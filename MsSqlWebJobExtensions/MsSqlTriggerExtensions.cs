@@ -1,6 +1,8 @@
 ﻿using Microsoft.Azure.WebJobs;
 using System;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("MsSqlWebJobExtensions.Tests")]
+
 namespace MsSqlWebJobExtensions
 {
     public static class MsSqlTriggerExtensions

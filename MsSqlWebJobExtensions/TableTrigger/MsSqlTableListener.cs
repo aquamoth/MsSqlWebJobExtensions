@@ -15,6 +15,11 @@ namespace MsSqlWebJobExtensions
         Timer _timer = null;
         CancellationToken _ct = default;
 
+
+#if DEBUG
+        internal bool __timer_callback_triggered = false;
+#endif
+
         public MsSqlTableListener(string configuration, ITriggeredFunctionExecutor triggerExecutor, MsSqlTableTriggerAttribute attribute)
         {
             _configuration = configuration;
@@ -33,8 +38,26 @@ namespace MsSqlWebJobExtensions
             return Task.CompletedTask;
         }
 
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            _timer.Dispose();
+            return Task.CompletedTask;
+        }
+
+        public void Cancel()
+        {
+        }
+
+        public void Dispose()
+        {
+        }
+
         private void Timer_Callback(object state)
         {
+#if DEBUG
+        __timer_callback_triggered = true;
+#endif
+
             if (_ct.IsCancellationRequested)
             {
                 _timer.Dispose();
@@ -91,21 +114,6 @@ namespace MsSqlWebJobExtensions
                 //TODO: Logging here
                 return false;
             }
-        }
-
-        public void Cancel()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Dispose()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
         }
     }
 }
