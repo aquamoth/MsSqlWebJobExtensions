@@ -28,6 +28,10 @@ namespace MsSqlWebJobExtensions
             if (tableAttribute != null)
                 return new MsSqlTableTriggerBinding(_configuration, parameter, tableAttribute);
 
+            var queryAttribute = parameter.GetCustomAttribute<MsSqlQueryTriggerAttribute>(inherit: false);
+            if (queryAttribute != null)
+                return new MsSqlQueryTriggerBinding(_configuration, parameter, queryAttribute);
+
             var attribute = parameter.GetCustomAttribute<MsSqlTriggerAttribute>(inherit: false);
             if (attribute != null)
                 return new MsSqlTriggerBinding(_configuration, parameter, attribute);

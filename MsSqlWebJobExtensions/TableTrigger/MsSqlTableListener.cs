@@ -13,7 +13,7 @@ namespace MsSqlWebJobExtensions
         readonly ITriggeredFunctionExecutor _triggerExecutor;
         readonly MsSqlTableTriggerAttribute _attribute;
         Timer _timer = null;
-        CancellationToken _ct = default;
+        CancellationToken _ct = default(CancellationToken);
 
 
 #if DEBUG
