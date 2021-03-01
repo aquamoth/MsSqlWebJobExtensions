@@ -1,7 +1,9 @@
-﻿namespace MsSqlWebJobExtensions
+﻿using System.Data.SqlClient;
+
+namespace MsSqlWebJobExtensions
 {
     public class MsSqlInfo
     {
-        public string TestMessage { get; set; }
+        public SqlNotificationInfo Info { get; set; }
     }
 }

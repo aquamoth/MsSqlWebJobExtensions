@@ -11,31 +11,31 @@ namespace MsSqlWebJobExtensions
 {
     public class MsSqlQueryListener : IListener
     {
-        readonly string _configuration;
+        readonly string _connectionString;
         readonly ITriggeredFunctionExecutor _triggerExecutor;
         readonly MsSqlQueryTriggerAttribute _attribute;
         CancellationToken _ct = default(CancellationToken);
+
+        readonly OnChangeEventHandler _onDependencyHandler;
 
         SqlConnection connection = null;
         SqlCommand command = null;
 
         public MsSqlQueryListener(string configuration, ITriggeredFunctionExecutor triggerExecutor, MsSqlQueryTriggerAttribute attribute)
         {
-            _configuration = configuration;
+            _connectionString = configuration;
+            _onDependencyHandler = new OnChangeEventHandler(async (sender, e) => await OnDependency(sender as SqlDependency, e));
             _triggerExecutor = triggerExecutor;
             _attribute = attribute;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            if (connection != null)
+                throw new ApplicationException("The previous connection must be stopped before a new can be started!");
 
             _ct = cancellationToken;
-
-
-            /*
-             * ALTER DATABASE AdvtDB SET ENABLE_BROKER;
-             */
+            _ct.ThrowIfCancellationRequested();
 
             if (!EnoughPermission())
                 throw new ApplicationException("User does not have database permission SUBSCRIBE QUERY NOTIFICATIONS.");
@@ -63,22 +63,24 @@ namespace MsSqlWebJobExtensions
             try
             {
                 // Remove any existing dependency connection, then create a new one.
-                var connectionString = _configuration;
-
-                SqlDependency.Stop(connectionString);
-                SqlDependency.Start(connectionString);
+                SqlDependency.Stop(_connectionString);
+                SqlDependency.Start(_connectionString);
 
                 if (connection == null)
-                    connection = new SqlConnection(connectionString);
+                    connection = new SqlConnection(_connectionString);
 
                 if (command == null)
                     command = new SqlCommand(_attribute.Query, connection);
 
                 await ReadDataAsync();
             }
+            catch (InvalidOperationException ex) when ((ex.HResult & 0xffffffff) == 0x80131509)
+            {
+                throw new ApplicationException($"The service broker must be enabled. Please execute 'ALTER DATABASE {connection.Database} SET ENABLE_BROKER;'.");
+            }
             catch (Exception ex)
             {
-                //TODO: Logging here
+                throw;
             }
         }
 
@@ -89,51 +91,64 @@ namespace MsSqlWebJobExtensions
 
             // Create and bind the SqlDependency object to the command object.
             SqlDependency dependency = new SqlDependency(command);
-            dependency.OnChange += new OnChangeEventHandler(new Action<object, SqlNotificationEventArgs>(dependency_OnChange));
+            dependency.OnChange += _onDependencyHandler;
 
+            Console.WriteLine("Opening connection");
             await connection.OpenAsync();
+            Console.WriteLine("Opened connection");
             //connection.BeginTransaction(IsolationLevel.ReadCommitted).Commit();
             //using (var setCommand = new SqlCommand("SET ARITHABORT ON", connection))
             //    setCommand.ExecuteNonQuery();
+
+            Console.WriteLine("Executing non query: " + command.CommandText);
             await command.ExecuteNonQueryAsync();
+            Console.WriteLine("Executed non query: " + command.CommandText);
+
             connection.Close();
+            Console.WriteLine("Closed connection");
         }
 
-        delegate void UIDelegate();
-        private void dependency_OnChange(object sender, SqlNotificationEventArgs e)
+        protected async Task OnDependency(SqlDependency dependency, SqlNotificationEventArgs e)
         {
-            SqlDependency dependency = (SqlDependency)sender;
-            dependency.OnChange -= dependency_OnChange;
+            Console.WriteLine("OnDependency " + e.Info);
+            if (e.Info == SqlNotificationInfo.Isolation)
+                return;
 
-            var msSqlInfo = new MsSqlInfo { /*TestMessage = "Some test message"*/ };//TODO: 
-            var triggerValue = JsonConvert.SerializeObject(msSqlInfo, Constants.JsonSerializerSettings);
+            dependency.OnChange -= _onDependencyHandler;
+            Console.WriteLine("OnDependency removed OnChange listener");
 
-            TriggeredFunctionData input = new TriggeredFunctionData
+            if (e.Source == SqlNotificationSource.Data && e.Type == SqlNotificationType.Change)
             {
-                TriggerValue = triggerValue
-            };
+                Console.WriteLine("OnDependency Trigger setup");
+                var msSqlInfo = new MsSqlInfo { Info = e.Info };
+                var triggerValue = JsonConvert.SerializeObject(msSqlInfo, Constants.JsonSerializerSettings);
+                var input = new TriggeredFunctionData { TriggerValue = triggerValue };
 
-            var task = _triggerExecutor.TryExecuteAsync(input, _ct);
+                Console.WriteLine("OnDependency Triggering");
+                await _triggerExecutor.TryExecuteAsync(input, _ct);
+                Console.WriteLine("OnDependency Trigger returned");
+            }
 
-            task.ContinueWith(t => ReadDataAsync()).GetAwaiter();
-
-            var x = 0;
+            Console.WriteLine("OnDependency reading next data");
+            _ = ReadDataAsync();
+            Console.WriteLine("OnDependency Completed");
         }
-
-
 
         public void Cancel()
         {
+            Console.WriteLine("Cancel()");
             throw new NotImplementedException();
         }
 
         public void Dispose()
         {
+            Console.WriteLine("Dispose()");
             throw new NotImplementedException();
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
+            Console.WriteLine("StopAsync()");
             throw new NotImplementedException();
         }
     }

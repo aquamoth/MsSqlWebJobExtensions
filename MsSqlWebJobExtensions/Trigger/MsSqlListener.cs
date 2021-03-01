@@ -56,7 +56,7 @@ namespace MsSqlWebJobExtensions
             if (!hasNewData)
                 return Task.CompletedTask;
 
-            var msSqlInfo = new MsSqlInfo { TestMessage = "Some test message" };
+            var msSqlInfo = new MsSqlInfo { Info = System.Data.SqlClient.SqlNotificationInfo.Unknown };
             var triggerValue = JsonConvert.SerializeObject(msSqlInfo, Constants.JsonSerializerSettings);
 
             TriggeredFunctionData input = new TriggeredFunctionData
